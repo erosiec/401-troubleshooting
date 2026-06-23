@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>401 Troubleshooting · frame.io</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:      #000000;
+      --grey-05:    #0D0D18;
+      --grey-08:    #12131D;
+      --grey-10:    #161722;
+      --grey-12:    #1D1F2C;
+      --grey-15:    #252736;
+      --grey-20:    #2E2F40;
+      --grey-30:    #36384A;
+      --grey-40:    #4F5167;
+      --grey-50:    #6A6B83;
+      --grey-60:    #81859F;
+      --grey-70:    #A3A4BF;
+      --grey-80:    #C1C2D9;
+      --white:      #FFFFFF;
+
+      --cobalt:       #5B53FF;
+      --cobalt-light: #6369FF;
+      --electric:     #47EBEB;
+      --iris:         #8952FD;
+      --iris-light:   #9F75F9;
+      --coral:        #FC856D;
+
+      --font: "Hanken Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --font-mono: "DM Mono", "JetBrains Mono", "SF Mono", Menlo, monospace;
+
+      --radius-sm: 3px;
+      --radius-md: 4px;
+
+      --hairline: 1px solid var(--grey-15);
+    }
+
+    html, body { background: var(--black); }
+
+    body {
+      font-family: var(--font);
+      color: var(--white);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 6rem 1.5rem 6rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 620px;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 4rem;
+    }
+    .brand-mark {
+      flex-shrink: 0;
+      height: 24px;
+      width: auto;
+      display: block;
+    }
+    .brand-meta {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--grey-60);
+    }
+
+    .kicker {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--grey-50);
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 400;
+      letter-spacing: -1.2px;
+      line-height: 1.1;
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+
+    .lede {
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 1.55;
+      color: var(--grey-70);
+      max-width: 480px;
+      margin-bottom: 3rem;
+    }
+
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: var(--hairline);
+    }
+    .dot {
+      width: 32px;
+      height: 2px;
+      background: var(--grey-15);
+      transition: background 0.2s ease;
+      flex-shrink: 0;
+    }
+    .dot.active { background: var(--coral); }
+    .dot.done { background: var(--electric); }
+    .progress-row > .dot:nth-child(1).done { background: var(--iris); }
+    .progress-row > .dot:nth-child(2).done { background: var(--iris-light); }
+    .progress-row > .dot:nth-child(3).done { background: var(--cobalt-light); }
+    .progress-row > .dot:nth-child(4).done { background: var(--electric); }
+    .progress-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--white);
+      margin-left: auto;
+      font-variant-numeric: tabular-nums;
+      animation: labelEnter 0.25s ease-out;
+    }
+    @keyframes labelEnter {
+      from { opacity: 0; transform: translateY(-2px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .card {
+      background: var(--grey-08);
+      border: var(--hairline);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 12px;
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      color: var(--grey-50);
+    }
+    .card.decision .card-label { color: var(--iris-light); }
+    .card.resolved .card-label { color: var(--electric); }
+    .card.escalate .card-label { color: var(--coral); }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--white);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .card-body {
+      font-size: 16px;
+      color: var(--grey-70);
+      line-height: 1.55;
+      font-weight: 400;
+    }
+    .card-body a {
+      color: var(--white);
+      text-decoration: none;
+      border-bottom: 1px solid var(--grey-30);
+      transition: border-color 0.15s;
+    }
+    .card-body a:hover {
+      border-bottom-color: var(--white);
+    }
+    .card-body strong {
+      font-weight: 500;
+      color: var(--white);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--black);
+      padding: 1px 6px;
+      color: var(--grey-80);
+      border: var(--hairline);
+      border-radius: var(--radius-sm);
+      letter-spacing: 0;
+    }
+
+    .code-block {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--black);
+      border: var(--hairline);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-top: 14px;
+      line-height: 1.6;
+      color: var(--grey-80);
+      overflow-x: auto;
+      white-space: pre;
+      display: block;
+      letter-spacing: 0;
+    }
+    .scope-list {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      background: var(--black);
+      border: var(--hairline);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-top: 14px;
+      line-height: 1.85;
+      color: var(--electric);
+      display: block;
+    }
+    .scope-list .strike {
+      color: var(--grey-40);
+      text-decoration: line-through;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid var(--grey-20);
+      background: transparent;
+      color: var(--grey-80);
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.12s ease;
+      font-family: inherit;
+      min-height: 36px;
+      text-decoration: none;
+    }
+    .btn:hover {
+      border-color: var(--grey-40);
+      color: var(--white);
+      background: var(--grey-08);
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn:focus-visible {
+      outline: 1px solid var(--cobalt);
+      outline-offset: 2px;
+    }
+
+    .btn.yes, .btn.primary {
+      background: var(--cobalt);
+      border-color: var(--cobalt);
+      color: var(--white);
+    }
+    .btn.yes:hover, .btn.primary:hover {
+      background: var(--cobalt-light);
+      border-color: var(--cobalt-light);
+    }
+
+    .btn-icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--grey-50);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      margin-bottom: 1.25rem;
+      font-family: inherit;
+      transition: color 0.15s;
+    }
+    .back-btn:hover { color: var(--white); }
+    .back-btn svg { width: 12px; height: 12px; }
+
+    @media (max-width: 600px) {
+      body { padding: 3rem 1.25rem 4rem; }
+      h1 { font-size: 32px; letter-spacing: -0.8px; }
+      .lede { font-size: 16px; }
+      .card { padding: 20px; }
+      .btn-row { flex-direction: column; align-items: stretch; }
+      .btn { justify-content: center; }
+      .brand-row { margin-bottom: 3rem; }
+      .lede { margin-bottom: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="brand-row">
+    <span class="brand-meta">frame.io developers</span>
+  </div>
+
+  <div class="kicker">401 troubleshooting</div>
+  <h1>Let's get you unblocked.</h1>
+  <p class="lede">Most 401s are caused by a handful of issues. Answer the questions below and we'll help narrow it down.</p>
+
+  <div class="progress-row" id="progress"></div>
+
+  <div id="steps">
+
+    <div class="step active" id="s0">
+      <div class="card decision">
+        <div class="card-label">Starting point</div>
+        <div class="card-title">Is IMS issuing you a token?</div>
+        <div class="card-body">Before troubleshooting the Frame.io API, let's confirm your auth flow is producing a token in the first place.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn yes" onclick="go('s1')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 7 12 13 4"/></svg>
+          Yes, I have a token
+        </button>
+        <button class="btn" onclick="go('s_no_token')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+          No token / request failing
+        </button>
+      </div>
+    </div>
+
+    <div class="step" id="s_no_token">
+      <button class="back-btn" onclick="back()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 4 5 8 10 12"/></svg>
+        Back
+      </button>
+      <div class="card">
+        <div class="card-label">Check first</div>
+        <div class="card-title">Verify your IMS client credentials</div>
+        <div class="card-body">If IMS isn't issuing a token, the issue is upstream of the Frame.io API. Double-check your client ID, client secret, and redirect URI, and confirm you're hitting the correct IMS endpoint for your environment.</div>
+      </div>
+      <div class="card escalate">
+        <div class="card-label">Still stuck</div>
+        <div class="card-title">Check Adobe's IMS docs</div>
+        <div class="card-body">IMS is Adobe's auth service, so token issuance issues are best troubleshot in their docs.</div>
+      </div>
+      <div class="btn-row">
+        <a href="https://developer.adobe.com/commerce/webapi/rest/authentication/user" target="_blank" class="btn primary">Open IMS docs</a>
+        <button class="btn" onclick="go('s0')">Start over</button>
+      </div>
+    </div>
+
+    <div class="step" id="s1">
+      <button class="back-btn" onclick="back()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 4 5 8 10 12"/></svg>
+        Back
+      </button>
+      <div class="card">
+        <div class="card-label">Step 1 / Scopes</div>
+        <div class="card-title">Decode your token and check the scopes</div>
+        <div class="card-body">The most common cause of a 401 is requesting the wrong scopes. Decode your JWT to verify.<br><br>
+        You can use <a href="https://jwt.io" target="_blank">jwt.io</a>, or run this in your terminal if you'd rather not paste your token into a web app:
+        <code class="code-block">echo "YOUR_JWT_HERE" | jq -R 'split(".") | .[0:2] | map(@base64d) | map(fromjson)'</code>
+        </div>
+      </div>
+      <div class="card decision">
+        <div class="card-label">Question</div>
+        <div class="card-title">Do all of these scopes appear in your token?</div>
+        <div class="card-body">
+        <code class="scope-list">offline_access
+openid
+email
+profile
+additional_info.roles</code>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn yes" onclick="go('s1_check')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 7 12 13 4"/></svg>
+          All scopes present
+        </button>
+        <button class="btn" onclick="go('s1_fix')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+          Missing one or more
+        </button>
+      </div>
+    </div>
+
+    <div class="step" id="s1_check">
+      <button class="back-btn" onclick="back()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 4 5 8 10 12"/></svg>
+        Back
+      </button>
+      <div class="card decision">
+        <div class="card-label">Quick check</div>
+        <div class="card-title">Retry your API call. Did the 401 come back?</div>
+        <div class="card-body">Even with all the correct scopes in your token, certain account configurations can still produce a 401. Let's confirm where you are.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn yes" onclick="go('resolved')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 7 12 13 4"/></svg>
+          No, I'm unblocked
+        </button>
+        <button class="btn" onclick="go('s1_email_fix')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+          Yes, still 401
+        </button>
+      </div>
+    </div>
+
+    <div class="step" id="s1_fix">
+      <button class="back-btn" onclick="back()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 4 5 8 10 12"/></svg>
+        Back
+      </button>
+      <div class="card">
+        <div class="card-label">Fix</div>
+        <div class="card-title">Request the full scope set in your auth flow</div>
+        <div class="card-body">Update your OAuth request to include all five scopes:
+        <code class="scope-list">offline_access
+openid
+email
+profile
+additional_info.roles</code>
+        Re-run your auth flow, then decode the new token to confirm the scopes are present before retrying your API call.</div>
+      </div>
+      <div class="card decision">
+        <div class="card-label">Question</div>
+        <div class="card-title">Did that fix the 401?</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn yes" onclick="go('resolved')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 7 12 13 4"/></svg>
+          Yes, fixed
+        </button>
+        <button class="btn" onclick="go('s1_email_fix')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+          Still getting 401
+        </button>
+      </div>
+    </div>
+
+    <div class="step" id="s1_email_fix">
+      <button class="back-btn" onclick="back()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 4 5 8 10 12"/></svg>
+        Back
+      </button>
+      <div class="card">
+        <div class="card-label">Try this next</div>
+        <div class="card-title">Re-auth without the <code>email</code> scope</div>
+        <div class="card-body">Older Frame.io accounts can fail token validation when <code>email</code> is in the scope list. If the rest of your setup looks right, re-auth with this set instead:
+        <code class="scope-list">offline_access
+openid
+<span class="strike">email</span>
+profile
+additional_info.roles</code>
+        </div>
+      </div>
+      <div class="card decision">
+        <div class="card-label">Question</div>
+        <div class="card-title">Did that fix the 401?</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn yes" onclick="go('resolved')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 7 12 13 4"/></svg>
+          Yes, fixed
+        </button>
+        <button class="btn" onclick="go('s2')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+          Still getting 401
+        </button>
+      </div>
+    </div>
+
+    <div class="step" id="s2">
+      <button class="back-btn" onclick="back()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 4 5 8 10 12"/></svg>
+        Back
+      </button>
+      <div class="card">
+        <div class="card-label">Step 2 / API explorer</div>
+        <div class="card-title">Test a call in the API Reference</div>
+        <div class="card-body">Head to the <a href="https://next.developer.frame.io/platform/v4/api-reference/accounts/index?explorer=true" target="_blank">API reference explorer</a>, hit Login, and send a test request.<br><br>
+        <strong>Important:</strong> log in with the same account you've been using for your API requests.</div>
+      </div>
+      <div class="card decision">
+        <div class="card-label">Question</div>
+        <div class="card-title">Does the explorer return a successful response?</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn yes" onclick="go('s2_request_format')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 7 12 13 4"/></svg>
+          Works in the explorer
+        </button>
+        <button class="btn" onclick="go('s3')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+          Still 401 in the explorer
+        </button>
+      </div>
+    </div>
+
+    <div class="step" id="s2_request_format">
+      <button class="back-btn" onclick="back()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 4 5 8 10 12"/></svg>
+        Back
+      </button>
+      <div class="card">
+        <div class="card-label">Narrowing down</div>
+        <div class="card-title">Your token is valid. Check your request format.</div>
+        <div class="card-body">Since the explorer works, the issue is likely in how you're sending the request. Confirm you're passing the token as a Bearer token in your Authorization header:
+        <code class="code-block">Authorization: Bearer YOUR_TOKEN_HERE</code>
+        Also confirm you're hitting the correct v4 base URL:
+        <code class="code-block">https://api.frame.io/v4/</code>
+        </div>
+      </div>
+      <div class="card decision">
+        <div class="card-label">Question</div>
+        <div class="card-title">Did fixing the request format resolve it?</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn yes" onclick="go('resolved')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 7 12 13 4"/></svg>
+          Yes, fixed
+        </button>
+        <button class="btn" onclick="go('escalate')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+          Still stuck
+        </button>
+      </div>
+    </div>
+
+    <div class="step" id="s3">
+      <button class="back-btn" onclick="back()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 4 5 8 10 12"/></svg>
+        Back
+      </button>
+      <div class="card decision">
+        <div class="card-label">Step 3 / Multiple accounts</div>
+        <div class="card-title">Does your Adobe ID belong to more than one Frame.io account?</div>
+        <div class="card-body">If the explorer is also failing, the next likely cause is that a cached browser session selected the wrong account during your OAuth login step, producing a valid token for an account you didn't intend to use.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn yes" onclick="go('s3_multi_fix')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 7 12 13 4"/></svg>
+          Yes, multiple accounts
+        </button>
+        <button class="btn" onclick="go('escalate')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+          No, just one
+        </button>
+      </div>
+    </div>
+
+    <div class="step" id="s3_multi_fix">
+      <button class="back-btn" onclick="back()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 4 5 8 10 12"/></svg>
+        Back
+      </button>
+      <div class="card">
+        <div class="card-label">Fix</div>
+        <div class="card-title">Clear your cache before completing the OAuth login step</div>
+        <div class="card-body">Each account you belong to is separate in our system. The correct one must be selected at login to access its workspaces and projects. A cached session will auto-select the last account used, which may not be the right one.<br><br>
+        <strong>Option A.</strong> Clear your browser cache, then complete the OAuth login flow again. You'll be prompted to select an account.<br><br>
+        <strong>Option B.</strong> Open the OAuth flow in a browser you've never used for Frame.io. A fresh session forces account selection.<br><br>
+        Once the correct account is selected, it's remembered as the default for subsequent logins.</div>
+      </div>
+      <div class="card decision">
+        <div class="card-label">Question</div>
+        <div class="card-title">Did clearing the cache fix the 401?</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn yes" onclick="go('resolved')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 7 12 13 4"/></svg>
+          Yes, fixed
+        </button>
+        <button class="btn" onclick="go('escalate')">
+          <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+          Still getting 401
+        </button>
+      </div>
+    </div>
+
+    <div class="step" id="resolved">
+      <button class="back-btn" onclick="back()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 4 5 8 10 12"/></svg>
+        Back
+      </button>
+      <div class="card resolved">
+        <div class="card-label">Resolved</div>
+        <div class="card-title">You're unblocked. Nice.</div>
+        <div class="card-body">Auth is sorted. The quick start guide will walk you through making your first API requests from here.</div>
+      </div>
+      <div class="btn-row">
+        <a href="https://next.developer.frame.io/platform/docs/quick-start#step-4-make-your-first-api-requests" target="_blank" class="btn primary">Open the quick start guide</a>
+        <button class="btn" onclick="go('s0')">Start over</button>
+      </div>
+    </div>
+
+    <div class="step" id="escalate">
+      <button class="back-btn" onclick="back()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 4 5 8 10 12"/></svg>
+        Back
+      </button>
+      <div class="card escalate">
+        <div class="card-label">Next step</div>
+        <div class="card-title">Share your details in the forum</div>
+        <div class="card-body">You've ruled out the common causes. To help further, please share:
+        <ul style="margin: 12px 0; padding-left: 1.25rem; list-style: none;">
+          <li style="position: relative; padding-left: 16px; margin-bottom: 4px;"><span style="position: absolute; left: 0; color: var(--grey-50);">·</span>The full 401 response body (not just the status code)</li>
+          <li style="position: relative; padding-left: 16px; margin-bottom: 4px;"><span style="position: absolute; left: 0; color: var(--grey-50);">·</span>Which endpoint you're calling</li>
+          <li style="position: relative; padding-left: 16px; margin-bottom: 4px;"><span style="position: absolute; left: 0; color: var(--grey-50);">·</span>The scopes from your JWT token payload</li>
+          <li style="position: relative; padding-left: 16px;"><span style="position: absolute; left: 0; color: var(--grey-50);">·</span>Whether this was working before, or is a first-time setup</li>
+        </ul>
+        Tagging your post with <code>401</code> and <code>auth</code> makes it easier to find and track.</div>
+      </div>
+      <div class="btn-row">
+        <a href="https://forum.frame.io/" target="_blank" class="btn primary">Open the forum</a>
+        <button class="btn" onclick="go('s0')">Start over</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const history = ['s0'];
+  const stepLabels = {
+    's0': '00 / Start',
+    's_no_token': '00 / No token',
+    's1': '01 / Scopes',
+    's1_check': '01 / Status check',
+    's1_fix': '01 / Scopes fix',
+    's1_email_fix': '01 / Email fallback',
+    's2': '02 / Explorer',
+    's2_request_format': '02 / Request format',
+    's3': '03 / Account',
+    's3_multi_fix': '03 / Account fix',
+    'resolved': 'Complete',
+    'escalate': 'Escalate'
+  };
+  const stepIndex = {
+    's0': 0,
+    's_no_token': 0,
+    's1': 1,
+    's1_check': 1,
+    's1_fix': 1,
+    's1_email_fix': 1,
+    's2': 2,
+    's2_request_format': 2,
+    's3': 3,
+    's3_multi_fix': 3,
+    'resolved': 4,
+    'escalate': 4
+  };
+  const totalDots = 4;
+
+  function go(id) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    history.push(id);
+    updateProgress(id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function back() {
+    if (history.length > 1) {
+      history.pop();
+      const prev = history[history.length - 1];
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById(prev).classList.add('active');
+      updateProgress(prev);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function updateProgress(id) {
+    const idx = stepIndex[id] ?? 0;
+    const isEnd = id === 'resolved' || id === 'escalate';
+    const prog = document.getElementById('progress');
+    let html = '';
+    for (let i = 0; i <= totalDots; i++) {
+      let cls = 'dot';
+      if (isEnd || i < idx) cls += ' done';
+      else if (i === idx) cls += ' active';
+      html += `<div class="${cls}"></div>`;
+    }
+    html += `<span class="progress-label">${stepLabels[id] ?? ''}</span>`;
+    prog.innerHTML = html;
+  }
+
+  updateProgress('s0');
+</script>
+</body>
+</html>
