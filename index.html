@@ -523,11 +523,11 @@ additional_info.roles</code>
       </button>
       <div class="card">
         <div class="card-label">Narrowing down</div>
-        <div class="card-title">Your token is valid. Check your request format.</div>
-        <div class="card-body">Since the explorer works, the issue is likely in how you're sending the request. Confirm you're passing the token as a Bearer token in your Authorization header:
+        <div class="card-title">Check your token and request format</div>
+        <div class="card-body">The explorer working confirms your account has API access. The 401 is coming from something in your own request, usually a stale or expired token, the wrong header format, or the wrong base URL. Check:
         <code class="code-block">Authorization: Bearer YOUR_TOKEN_HERE</code>
-        Also confirm you're hitting the correct v4 base URL:
         <code class="code-block">https://api.frame.io/v4/</code>
+        If your token might be expired, refresh it through your auth flow and retry.
         </div>
       </div>
       <div class="card decision">
